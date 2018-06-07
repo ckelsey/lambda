@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            width: 100%;
+            height: 100%;
+            background: #323232;
+            font: 14px sans-serif;
+            color: #dedede;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none !important;
+        }
+
+        img {
+            max-width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>WEBP demo</h1>
+    <p>
+        <!-- <select id="url-options">
+            <option value="screenshot">Screenshot</option>
+            <option value="vr">VR</option>
+        </select> -->
+
+        <input type="number" id="image-id">
+        <button id="go">Load</button>
+    </p>
+    <p id="status"></p>
+    <div id="results">
+        <div id="jpg">
+            <h2>JPG</h2>
+            <div id="jpg-large-container">
+                <img id="jpg-large-img">
+                <p id="jpg-large-text"></p>
+            </div>
+
+            <div id="jpg-preview-container">
+                <img id="jpg-preview-img">
+                <p id="jpg-preview-text"></p>
+            </div>
+
+            <div id="jpg-thumb-container">
+                <img id="jpg-thumb-img">
+                <p id="jpg-thumb-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // var options = {
+        //     screenshot: {
+        //         large: 'https://d1g1aamoxberjq.cloudfront.net/webp/low_resolution_1517808076926_2_in.jpg',
+        //         preview: 'https://d1g1aamoxberjq.cloudfront.net/webp/low_resolution_25_1517808076926_2_in.jpg',
+        //         thumb: 'https://d1g1aamoxberjq.cloudfront.net/webp/thumbnail_1517808076926_2_in.jpg'
+        //     }
+        // }
+
+        // function loadImage(data, key, type) {
+        //     return new Promise((resolve) => {
+        //         var now = new Date().getTime()
+        //         var img = window.document.getElementById(type + '-' + key + '-img')
+        //         var text = window.document.getElementById(type + '-' + key + '-text')
+
+        //         img.onload = function () {
+        //             text.textContent = 'Loaded ' + key + ' in ' + ((new Date().getTime() - now) / 1000).toFixed(2) + ' seconds'
+        //             resolve()
+        //         }
+
+        //         img.src = data[key]
+        //     })
+        // }
+
+        // function setImages(value) {
+        //     loadImage(value, 'large', 'jpg')
+        //         .then(() => {
+        //             return loadImage(value, 'preview', 'jpg')
+        //         })
+        //         .then(() => {
+        //             return loadImage(value, 'thumb', 'jpg')
+        //         })
+        // }
+
+        // window.document.addEventListener("DOMContentLoaded", function () {
+        //     var urlSelect = window.document.getElementById('url-options')
+
+        //     urlSelect.addEventListener('change', function (e) {
+        //         setImages(options[e.target.options[e.target.selectedIndex].value])
+        //     })
+        // })
+
+        // setImages(options.screenshot)
+
+        const imageIdInput = window.document.getElementById(`image-id`)
+        const goButton = window.document.getElementById(`go`)
+        const jpgLargeImage = window.document.getElementById(`jpg-large-img`)
+        const jpgLargeText = window.document.getElementById(`jpg-large-text`)
+        const jpgPreviewImage = window.document.getElementById(`jpg-preview-img`)
+        const jpgPreviewText = window.document.getElementById(`jpg-preview-text`)
+        const jpgThumbImage = window.document.getElementById(`jpg-thumb-img`)
+        const jpgThumbText = window.document.getElementById(`jpg-thumb-text`)
+        const status = window.document.getElementById(`status`)
+
+        goButton.addEventListener(`click`, (e)=>{
+            var id = imageIdInput.value
+            console.log(id)
+
+            var xhr = new XMLHttpRequest()
+            xhr.open(`GET`, `https://api.cklsylabs.com/swg/images/byid?id=${id}`)
+            xhr.onload = (res)=>{
+                console.log(xhr.responseText)
+            }
+
+            xhr.send()
+        })
+
+    </script>
+</body>
+<html>
