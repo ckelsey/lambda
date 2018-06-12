@@ -37,10 +37,7 @@ exports.handler = (event, context, callback) => {
     const region = process.env.AWS_REGION
     const delegationFn = process.env.DELEGATION_FN
     const lambda = new AWS.Lambda({ region })
-    const config = {
-        "accessKeyId": "AKIAJX34UWOGLB2YN7TA",
-        "secret": "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"
-    }
+    const config = { accessKeyId: process.env.KEY, secretAccessKey: process.env.SECRET }
 
     const urls = {
         original: {

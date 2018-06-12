@@ -15,10 +15,7 @@ exports.handler = (event, context, callback) => {
     const handlerKey = process.env.HANDLER_KEY
 
     const lambda = new AWS.Lambda({ region })
-    const config = {
-        "accessKeyId": "AKIAJX34UWOGLB2YN7TA",
-        "secret": "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"
-    }
+    const config = { accessKeyId: process.env.KEY, secretAccessKey: process.env.SECRET }
 
     var handlers = {}
     var handlerSizes = []
