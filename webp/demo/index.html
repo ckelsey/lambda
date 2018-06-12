@@ -123,6 +123,24 @@
             xhr.send()
         })
 
+        // var xhr1 = new XMLHttpRequest()
+        // xhr1.open(`GET`, `https://api.cklsylabs.com/swg/images/webp/convert?url=https://images.nvidia.com/swgf/146563624599552127/12979/U3Rhcl9XYXJzX19CYXR0bGVmcm9udF9JSV9fMjAxN19fU2NyZWVuc2hvdF8yMDE4LjA2LjA1X19fMjMuNDYuNTYuNzM.png`)
+        // xhr1.setRequestHeader(`Accept`, `image/png`)
+        // xhr1.setRequestHeader(`Content-type`, `image/png`)
+        // xhr1.onload = (res) => {
+        //     console.log(typeof xhr1.response)
+        //     // var arrayBufferView = new Uint8Array(xhr1.response);
+        //     var blob = new Blob([xhr1.response], { type: "image/png" });
+        //     var urlCreator = window.URL || window.webkitURL;
+        //     var imageUrl = urlCreator.createObjectURL(blob);
+        //     var img = document.getElementById(`jpg-large-img`);
+        //     img.src = imageUrl;
+        // }
+
+        // xhr1.send()
+
+        jpgLargeImage.src = `https://api.cklsylabs.com/swg/images/webp/convert?return_image=true&width=300&url=https://s3-us-west-2.amazonaws.com/cklsymedia/webp/2231/large.webp`
+
     </script>
 </body>
 <html>
