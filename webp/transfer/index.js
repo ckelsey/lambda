@@ -4,26 +4,8 @@ const AWS = require('aws-sdk')
 
 exports.handler = (event, context, callback) => {
     function finish(status, body) {
-        var error = status === 200 ? null : {
-            "isBase64Encoded": false,
-            "statusCode": status,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Content-type": "application/json"
-            },
-            "body": JSON.stringify(body)
-        }
-
-        var resp = status !== 200 ? null : {
-            "isBase64Encoded": false,
-            "statusCode": status,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Content-type": "application/json"
-            },
-            "body": JSON.stringify(body)
-        }
-
+        var error = status === 200 ? null : body
+        var resp = status !== 200 ? null : body
         return callback(error, resp)
     }
 
@@ -35,8 +17,9 @@ exports.handler = (event, context, callback) => {
     const bucket = process.env.BUCKET_NAME
     const bucketPath = process.env.BUCKET_PATH
     const region = process.env.AWS_REGION
-    const delegationFn = process.env.DELEGATION_FN
-    const lambda = new AWS.Lambda({ region })
+    const s3Region = process.env.S3_REGION
+    // const delegationFn = process.env.DELEGATION_FN
+    // const lambda = new AWS.Lambda({ region })
     const config = { accessKeyId: process.env.KEY, secretAccessKey: process.env.SECRET }
 
     const urls = {
@@ -58,17 +41,15 @@ exports.handler = (event, context, callback) => {
         }
     }
 
-    console.log(`delegationFn`, delegationFn)
-
-    lambda.invoke({
-        FunctionName: delegationFn,
-        Payload: JSON.stringify({
-            imageUrl: urls.original.path,
-            s3Path: `${event.list[0].id}`
-        }, null, 2)
-    }, function (error, data) { 
-        console.log(error, data)
-    })
+    // lambda.invoke({
+    //     FunctionName: delegationFn,
+    //     Payload: JSON.stringify({
+    //         imageUrl: urls.original.path,
+    //         s3Path: `${event.list[0].id}`
+    //     }, null, 2)
+    // }, function (error, data) { 
+    //     console.log(error, data)
+    // })
 
     var results = {}
     var s3 = new AWS.S3()
@@ -90,9 +71,10 @@ exports.handler = (event, context, callback) => {
             getResp.on('data', (chunk) => { buffers.push(chunk) })
             getResp.on('end', () => {
                 let buffer = Buffer.concat(buffers)
+                let bucketKey = `${bucketPath}/${event.list[0].id}/${urls[key].name}`
                 let putOptions = {
                     Bucket: bucket,
-                    Key: `${bucketPath}/${event.list[0].id}/${urls[key].name}`,
+                    Key: bucketKey,
                     ContentType: ext === `jpg` ? `image/jpeg` : `image/${ext}`,
                     ContentLength: Buffer.byteLength(buffer, `binary`),
                     Body: buffer,
@@ -105,12 +87,10 @@ exports.handler = (event, context, callback) => {
                         return finish(400, { error: putErr })
                     }
 
-                    results[key] = putRes
-
-                    console.log(Object.keys(results), Object.keys(urls), Object.keys(results).length, Object.keys(urls).length)
+                    results[key] = `https://s3-${s3Region}.amazonaws.com/${bucket}/${bucketKey}`
 
                     if (Object.keys(results).length === Object.keys(urls).length) {
-                        // return finish(200, results)
+                        return finish(200, results)
                     }
                 })
             })

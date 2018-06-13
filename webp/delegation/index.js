@@ -3,10 +3,8 @@ const https = require(`https`)
 const url = require(`url`)
 
 exports.handler = (event, context, callback) => {
-    console.log(`yo,`, event)
     const s3Path = event.s3Path
     const imageUrl = event.imageUrl
-    const imageBuffer = event.imageBuffer
 
     const region = process.env.AWS_REGION
 
@@ -19,53 +17,6 @@ exports.handler = (event, context, callback) => {
 
     var handlers = {}
     var handlerSizes = []
-
-    function sendToHandler() {
-        let handler
-        let imageSize = Buffer.byteLength(event.imageBuffer, `binary`)
-        console.log(`imageSize`, imageSize, handlerSizes, handlerSizes[handlerSizes.length - 1])
-
-        for (var i = 0; i < handlerSizes.length; i++) {
-            console.log(`imageSize2`, handlerSizes[i] > imageSize, typeof handlerSizes[i], handlerSizes[i], typeof imageSize, imageSize)
-            if (handlerSizes[i] > (imageSize / (1024 * 1024))) {
-                handler = handlers[handlerSizes[i]]
-                break
-            }
-        }
-
-        if (!handler) {
-            handler = handlers[handlerSizes[handlerSizes.length - 1]]
-        }
-
-        console.log(`Handler selected`, handler)
-
-        var lambda = new AWS.Lambda({ region })
-
-        lambda.invoke({
-            FunctionName: handler,
-            Payload: JSON.stringify(event, null, 2)
-        }, function (error, data) {
-            if (error) {
-                console.log("Image handle error", error)
-
-                return callback(error)
-            }
-
-            if (data.Payload) {
-                data.Payload = JSON.parse(data.Payload)
-
-                console.log("Image handled", data.Payload)
-
-                if (data.Payload.error) {
-                    return callback(data.Payload.error, null)
-                }
-
-                return callback(null, data.Payload)
-            } else {
-                return callback(`Image handle error`, null)
-            }
-        })
-    }
 
     if (!s3Path) {
         return callback(`no s3Path`)
@@ -98,13 +49,6 @@ exports.handler = (event, context, callback) => {
         return a > b
     })
 
-    console.log("HANDLER handlerSizes", handlerSizes)
-    console.log("HANDLERS", handlers)
-
-    if (imageBuffer) {
-        return sendToHandler()
-    }
-
     if (!imageUrl) {
         return callback(`no image url`)
     }
@@ -114,17 +58,40 @@ exports.handler = (event, context, callback) => {
         host: getUrl.host,
         protocol: getUrl.protocol,
         path: getUrl.path,
-        method: 'GET'
+        method: 'HEAD'
     }
 
     var getReq = https.request(getOptions, function (getResp) {
-        let buffers = []
+        console.log(getResp.headers)
 
-        getResp.on('data', (chunk) => { buffers.push(chunk) })
-        getResp.on('end', () => {
-            event.imageBuffer = Buffer.concat(buffers)
-            return sendToHandler()
+        let handler
+        let imageSize = getResp.headers['content-length']
+
+        for (var i = 0; i < handlerSizes.length; i++) {
+            if (handlerSizes[i] > (imageSize / (1024 * 1024))) {
+                handler = handlers[handlerSizes[i]]
+                break
+            }
+        }
+
+        if (!handler) {
+            handler = handlers[handlerSizes[handlerSizes.length - 1]]
+        }
+
+        lambda.invoke({
+            FunctionName: handler,
+            Payload: JSON.stringify(event, null, 2)
+        }, function (error, data) {
+            console.log('lambda', error, data)
+            return callback(error, data)
         })
+        // let buffers = []
+
+        // getResp.on('data', (chunk) => { buffers.push(chunk) })
+        // getResp.on('end', () => {
+        //     // event.imageBuffer = new Buffer(Buffer.concat(buffers), `binary`).toString(`base64`)
+        //     // sendToHandler()
+        // })
     })
 
     getReq.end()

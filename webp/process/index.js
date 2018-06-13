@@ -61,9 +61,9 @@ exports.handler = (event, context, callback) => {
             lambda.invoke({
                 FunctionName: transferFn,
                 Payload: JSON.stringify(data, null, 2)
-            }, function (error, data) {})
-
-            return finish(200, data)
+            }, function (error, data) {
+                return finish(error ? 401 : 200, error || data)
+            })
         })
     })
 

@@ -1,5 +1,112 @@
-const sharp = require(`sharp`)
+const Sharp = require(`sharp`)
 var AWS = require(`aws-sdk`)
+
+module.exports = event => {
+    return new Promise((resolve, reject) => {
+        var width = event.imageData.meta.orientation === 6 || event.imageData.meta.orientation === 8 ? event.imageData.meta.height : event.imageData.meta.width
+        var height = event.imageData.meta.orientation === 6 || event.imageData.meta.orientation === 8 ? event.imageData.meta.width : event.imageData.meta.height
+
+        if (event.max) {
+            if (width > height) {
+                if (width > event.max) {
+                    height = height * (event.max / width)
+                    width = event.max
+                }
+            } else {
+                if (height > event.max) {
+                    width = width * (event.max / height)
+                    height = event.max
+                }
+            }
+        }
+
+        var largeOptions = {
+            quality: event.largeQuality ? parseInt(event.largeQuality) : 60
+        }
+
+        var smallOptions = {
+            quality: event.smallQuality ? parseInt(event.smallQuality) : 66
+        }
+
+        var smallScale = event.smallScale ? parseFloat(event.smallScale) : 3
+
+        event.imageData.variants = {}
+
+        console.log(largeOptions)
+
+        try {
+            Sharp(event.imageData.buffer)
+                .rotate()
+                .resize(width, height)
+                .webp(largeOptions)
+                .toBuffer((err, data) => {
+                    if (err) {
+                        return reject(err)
+                    }
+
+                    event.imageData.variants.large = data
+
+                    console.log("large")
+
+                    Sharp(event.imageData.buffer)
+                        .rotate()
+                        .resize(width / smallScale, height / smallScale)
+                        .webp(smallOptions)
+                        .toBuffer((err, data) => {
+                            if (err) {
+                                return reject(err)
+                            }
+
+                            event.imageData.variants.small = data
+
+                            console.log("small")
+
+                            return resolve(event)
+
+                            // Crop options
+                            // let options = {
+                            //     orientation: event.imageData.meta.orientation, // if the image is rotated
+                            //     imageWidth: event.imageData.meta.width,
+                            //     imageHeight: event.imageData.meta.height,
+                            //     viewWidth: event.crop.viewWidth, // the viewport of the image in the clients browser
+                            //     viewHeight: event.crop.viewHeight, // the viewport of the image in the clients browser
+                            //     tilt: event.crop.tilt, // n/a to non 360
+                            //     pan: event.crop.pan, // n/a to non 360
+                            //     zoom: event.crop.zoom, // n/a to non 360
+                            //     x: event.crop.x, // left position of the crop
+                            //     y: event.crop.y, // top position of the crop
+                            //     width: event.crop.width, // width of the cropped area
+                            //     height: event.crop.height, // height of the cropped area
+                            //     pixelRatio: event.crop.pixelRatio,  // pixel ratio of the clients browser
+                            // }
+
+                            // if (event.imageData.meta[`3D`]) {
+                            //     options.type = `3d`
+                            // }
+
+                            // console.log("GET THUMB")
+
+                            // if (event.imageData.meta[`360`]) {
+                            //     image360(event.imageData.buffer, options)
+                            //         .then(uploadThumb)
+                            //         .catch(callback)
+                            // } else {
+                            //     imageFlat(event.imageData.buffer, options)
+                            //         .then(uploadThumb)
+                            //         .catch(callback)
+                            // }
+                        })
+                })
+        } catch (error) {
+            console.log(error)
+            return reject(error)
+        }
+
+
+    })
+}
+
+/*
 
 module.exports = (event, callback) => {
     const fields = event[`body-json`]
@@ -100,3 +207,4 @@ module.exports = (event, callback) => {
                 })
         })
 }
+*/

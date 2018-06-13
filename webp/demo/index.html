@@ -22,6 +22,8 @@
             max-width: 300px;
         }
     </style>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.100.0.min.js"></script>
 </head>
 
 <body>
@@ -100,6 +102,12 @@
 
         // setImages(options.screenshot)
 
+        const region = `us-east-1`
+        const delegationFn = `arn:aws:lambda:us-east-1:005536209483:function:swg-images-delegation`
+
+        AWS.config.update({ region })
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({ IdentityPoolId: 'us-east-1:ff74f0a6-ee1c-4563-b5fa-b1d92c393f14' })
+
         const imageIdInput = window.document.getElementById(`image-id`)
         const goButton = window.document.getElementById(`go`)
         const jpgLargeImage = window.document.getElementById(`jpg-large-img`)
@@ -115,9 +123,32 @@
             console.log(id)
 
             var xhr = new XMLHttpRequest()
-            xhr.open(`GET`, `https://api.cklsylabs.com/swg/images/byid?id=${id}`)
+            xhr.open(`GET`, `https://api.cklsylabs.com/swg/images/webp/process?id=${id}`)
             xhr.onload = (res)=>{
-                console.log(xhr.responseText)
+                let results
+
+                try {
+                    results = JSON.parse(xhr.responseText)
+                    results = JSON.parse(results.Payload)
+                } catch (error) {}
+
+                console.log(results)
+
+                if(!results || !results.original){
+                    return
+                }
+
+                const lambda = new AWS.Lambda({ region })
+
+                lambda.invoke({
+                    FunctionName: delegationFn,
+                    Payload: JSON.stringify({
+                        imageUrl: results.original,
+                        s3Path: id
+                    }, null, 2)
+                }, function (error, data) {
+                    console.log(error, data)
+                })
             }
 
             xhr.send()
@@ -139,7 +170,7 @@
 
         // xhr1.send()
 
-        jpgLargeImage.src = `https://api.cklsylabs.com/swg/images/webp/convert?return_image=true&width=300&url=https://s3-us-west-2.amazonaws.com/cklsymedia/webp/2231/large.webp`
+        // jpgLargeImage.src = `https://api.cklsylabs.com/swg/images/webp/convert?return_image=true&width=300&url=https://s3-us-west-2.amazonaws.com/cklsymedia/webp/2231/large.webp`
 
     </script>
 </body>
