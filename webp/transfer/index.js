@@ -18,8 +18,6 @@ exports.handler = (event, context, callback) => {
     const bucketPath = process.env.BUCKET_PATH
     const region = process.env.AWS_REGION
     const s3Region = process.env.S3_REGION
-    // const delegationFn = process.env.DELEGATION_FN
-    // const lambda = new AWS.Lambda({ region })
     const config = { accessKeyId: process.env.KEY, secretAccessKey: process.env.SECRET }
 
     const urls = {
@@ -40,16 +38,6 @@ exports.handler = (event, context, callback) => {
             name: item.thumbnailPath.split(`/`)[item.thumbnailPath.split(`/`).length - 1]
         }
     }
-
-    // lambda.invoke({
-    //     FunctionName: delegationFn,
-    //     Payload: JSON.stringify({
-    //         imageUrl: urls.original.path,
-    //         s3Path: `${event.list[0].id}`
-    //     }, null, 2)
-    // }, function (error, data) { 
-    //     console.log(error, data)
-    // })
 
     var results = {}
     var s3 = new AWS.S3()

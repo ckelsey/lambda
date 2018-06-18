@@ -1,0 +1,13 @@
+{
+    "imageUrl": "http://localhost:8123/images/2-og.png",
+    "s3Path": 1,
+    "imageOptions": [
+        {
+            "quality": 70,
+            "width": 400,
+            "format": "jpg",
+            "prefix": "thumb",
+            "normalize": true
+        }
+    ]
+}

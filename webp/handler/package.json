@@ -1,7 +1,0 @@
-{
-    "dependencies": {
-        "sharp": "^0.20.1",
-        "canvas": "^2.0.0-alpha.11",
-        "three": "^0.91.0"
-    }
-}
