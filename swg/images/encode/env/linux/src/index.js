@@ -32,9 +32,6 @@ const defaultOptions = [
 
 exports.handler = (event, context, callback) => {
 
-    // IMAGE NEEDS TO BE FETCHED HERE BECAUSE THERE IS A 6MB LIMIT ON INVOKE
-    const imageUrl = event.imageUrl
-    const s3Path = event.s3Path
     const region = process.env.AWS_REGION
     const bucketPath = process.env.BUCKET_PATH
     const bucket = process.env.BUCKET_NAME
@@ -44,7 +41,31 @@ exports.handler = (event, context, callback) => {
 
     try {
         event.imageOptions = JSON.parse(event.imageOptions)
-    } catch (error) {}
+    } catch (error) { }
+
+    function finish(status, body) {
+        var error = status === 200 ? null : {
+            "isBase64Encoded": false,
+            "statusCode": status,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Content-type": "application/json"
+            },
+            "body": JSON.stringify(body)
+        }
+
+        var resp = status !== 200 ? null : {
+            "isBase64Encoded": false,
+            "statusCode": status,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Content-type": "application/json"
+            },
+            "body": JSON.stringify(body)
+        }
+
+        return callback(error, resp)
+    }
 
     var run = (imageBuffer) => {
         event.imageData.buffer = imageBuffer
@@ -52,7 +73,6 @@ exports.handler = (event, context, callback) => {
         Sharp(event.imageData.buffer)
             .metadata()
             .then(meta => {
-                
                 meta.exif = meta.exif ? exif(meta.exif).image : {}
 
                 if (meta.format === `png`) {
@@ -90,7 +110,7 @@ exports.handler = (event, context, callback) => {
                 event.imageData.meta = meta
 
                 if (!validator(event.imageData.meta.exif)) {
-                    callback({
+                    finish(400, {
                         success: false,
                         message: `No Ansel metadata`,
                         results: event
@@ -120,18 +140,19 @@ exports.handler = (event, context, callback) => {
                         var responses = []
 
                         if (process.env.LOCALDEV) {
-                            return callback(null, results)
+                            return finish(200, results)
                         }
 
-                        results.imageOptions.forEach(option => {
-                            
+                        results.imageOptions.forEach((option, index) => {
+                            let filename = `${option.prefix ? `${option.prefix}_` : ``}${option.name ? option.name : event.imageData.filename}`
+
                             let s3 = new AWS.S3({
                                 params: {
                                     Bucket: bucket,
-                                    Key: `${bucketPath}/${s3Path}/${key}_${event.imageData.filename}.${event.imageOptions.format}`,
-                                    Body: results.imageData.variants[key],
-                                    ContentType: `image/${event.imageOptions.format === `jpg` ? `jpeg` : event.imageOptions.format}`,
-                                    ContentLength: Buffer.byteLength(results.imageData.variants[key], `binary`),
+                                    Key: `${bucketPath}/${event.s3Path}/${filename}.${option.format}`,
+                                    Body: option.buffer,
+                                    ContentType: `image/${option.format === `jpg` ? `jpeg` : option.format}`,
+                                    ContentLength: Buffer.byteLength(option.buffer, `binary`),
                                     ACL: `public-read`
                                 },
                                 options: { partSize: 5 * 1024 * 1024, queueSize: 10 }   // 5 MB
@@ -141,43 +162,43 @@ exports.handler = (event, context, callback) => {
                             s3.upload()
                                 .send(function (err, data) {
                                     if (err) {
-                                        urls[key] = {
+                                        urls[filename] = {
                                             success: false,
                                             response: err
                                         }
                                     } else {
-                                        urls[key] = {
+                                        urls[filename] = {
                                             success: true,
                                             response: data.Location
                                         }
                                     }
 
-                                    if (Object.keys(urls).length === sizes.length) {
-                                        return callback(null, urls)
+                                    if (Object.keys(urls).length === results.imageOptions.length) {
+                                        return finish(200, urls)
                                     }
                                 })
                         })
 
                     }, err => {
-                        callback(err)
+                        finish(500, err)
                     })
             }, err => {
-                callback(err)
+                finish(500, err)
             })
     }
 
-    if (!imageUrl) {
-        return callback(`no image url`)
+    if (!event.imageUrl) {
+        return finish(400, `no image url`)
     }
 
-    let filename = imageUrl.split(`/`)
+    let filename = event.imageUrl.split(`/`)
     filename = filename.pop()
     filename = filename.split(`.`)
     filename.pop()
     filename = filename.join(`.`)
     event.imageData.filename = filename
 
-    let getUrl = new url.parse(imageUrl)
+    let getUrl = new url.parse(event.imageUrl)
     let getOptions = {
         host: getUrl.host.indexOf(`localhost`) > -1 ? `localhost` : getUrl.host,
         protocol: getUrl.protocol,

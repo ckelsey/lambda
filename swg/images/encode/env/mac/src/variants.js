@@ -2,6 +2,34 @@ const Sharp = require(`sharp`)
 const image360 = require('./image-360')
 const imageFlat = require('./image-flat')
 
+/* 
+
+OPTIONS
+- quality: 1-100, for jpg or webp formats
+- compressionLevel: 0-9, for png format
+- chromaSubsampling: '4:4:4' or '4:2:0', for jpg format
+- progressive: true/false, for jpg or png formats
+- format: jpg, png or webp
+- width: Set a specific width in pixels
+- height: Set a specific height in pixels
+- max: Set a maximum dimension for both width and height
+- scale: 0.0 to 1, amount to scale the image down
+- normalize: true/false, whether or not to run through the image processors for 360 or 3D images
+- prefix: prefix the output file name
+- name: specify a file name
+- crop
+    - viewWidth: the width of the cropper viewport, specifically for 360 images
+    - viewHeight: the height of the cropper viewport, specifically for 360 images
+    - width: the width of the cropped area
+    - height: the height of the cropped area
+    - x: starting x point of crop
+    - y: starting y point of crop
+    - tilt: Y axis, specifically for 360 images
+    - pan: X axis, specifically for 360 images
+    - zoom: Z axis
+    - pixelRatio: the pixel ratio of the device that is requesting the crop. I.E. crop settings on a retina screen may differ from a normal screen
+*/
+
 module.exports = event => {
     return new Promise((resolve, reject) => {
         var width = event.imageData.meta.Orientation === 6 || event.imageData.meta.Orientation === 8 ? event.imageData.meta.height : event.imageData.meta.width
@@ -38,7 +66,7 @@ module.exports = event => {
                 // Crop options
                 option.crop = option.crop || {}
                 let params = {
-                    orientation: event.imageData.meta.Orientation, // if the image is rotated
+                    orientation: event.imageData.meta.Orientation || event.imageData.meta.orientation, // if the image is rotated
                     imageWidth: event.imageData.meta.width,
                     imageHeight: event.imageData.meta.height,
                     viewWidth: option.crop.viewWidth, // the viewport of the image in the clients browser
