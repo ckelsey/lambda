@@ -22,8 +22,6 @@ const http = require('http')
 const server = http.createServer().listen(8127);
 
 server.on("request", (req, res) => {
-    console.log(req.url)
-
     res.setHeader("Content-Type", "application/json; charset=utf-8")
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
@@ -40,7 +38,6 @@ server.on("request", (req, res) => {
     var xml = new XmlStream(files)
     xml.collect('Key')
     xml.on('endElement: Key', function (item) {
-        console.log(item)
         filesArray.push(item['$text'])
     })
 
@@ -50,12 +47,15 @@ server.on("request", (req, res) => {
         })
 
     function getFiles(files) {
+        let completed = 0
         console.log(files.length)
 
         const doReq = () => {
             var keyPath = files.pop()
 
             if (!keyPath) {
+                res.statusCode = 200
+                res.end()
                 return
             }
 
@@ -75,10 +75,7 @@ server.on("request", (req, res) => {
 
                         fs.writeFileSync(filePath, data.Body)
 
-                        console.log(`size`, fs.statSync(filePath).size)
-
                         const child = spawn(`/home/ec2-user/gdrive`, [`upload`, `--parent`, `1ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj`, filePath]);
-                        // const child = spawn(`pwd`, []);
 
                         child.stdout.on('data', (data) => {
                             console.log(`${data}`);
@@ -89,6 +86,8 @@ server.on("request", (req, res) => {
                         });
 
                         child.on('exit', function (code, signal) {
+                            completed++
+                            console.log(`completed`, completed)
                             exec(`sudo rm -f ${filePath}`, function (err, stdout, stderr) {
                                 console.log(err, stdout, stderr)
                                 doReq()
