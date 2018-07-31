@@ -7,6 +7,7 @@ var fs = require('fs')
 var AWS = require('aws-sdk')
 var XmlStream = require('xml-stream')
 const exec = require('child_process').exec
+const { spawn } = require('child_process')
 var region = 'us-east-1'
 var bucket = 'cklsymedia'
 var folder = 'super_res'
