@@ -78,7 +78,7 @@ server.on("request", (req, res) => {
                         console.log(`size`, fs.statSync(filePath).size)
 
                         // const child = spawn(`~/gdrive`, [`upload`, `--parent`, `ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj`, filePath]);
-                        const child = spawn(`ls`, [`-la`, `~`]);
+                        const child = spawn(`ls`, [`~/`]);
 
                         child.stdout.on('data', (data) => {
                             console.log(`${data}`);
