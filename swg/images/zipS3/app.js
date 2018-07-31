@@ -74,6 +74,8 @@ server.on("request", (req, res) => {
 
                         fs.writeFileSync(filePath, data.Body)
 
+                        console.log(`size`, fs.statSync(filePath).size)
+
                         // exec(`whoami && sudo rm -f ${filePath}`, function (err, stdout, stderr) {
                         //     console.log(err, stdout, stderr)
                         //     doReq()
