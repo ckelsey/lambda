@@ -1,5 +1,3 @@
-process.env.AWS_REGION = `us-east-1`
-process.env.BUCKET_PATH = `webp`
 process.env.BUCKET_NAME = `cklsymedia`
 process.env.LOCALDEV = true
 
@@ -8,7 +6,7 @@ const fs = require('fs')
 const path = require(`path`)
 const url = require('url')
 const func = require("./index")
-var server = http.createServer().listen(8123);
+const server = http.createServer().listen(8123);
 
 server.on("request", (req, res) => {
 
@@ -29,8 +27,8 @@ server.on("request", (req, res) => {
             res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
             res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-            var mime = "text/html"
-            var ext = req.url.split(`.`).pop()
+            let mime = "text/html"
+            let ext = req.url.split(`.`).pop()
 
             switch (ext) {
                 case `png`:
@@ -41,7 +39,7 @@ server.on("request", (req, res) => {
                     break
             }
 
-            var size = Buffer.byteLength(file, 'binary')
+            let size = Buffer.byteLength(file, 'binary')
             console.log(size)
 
             res.setHeader('Content-Type', mime);
@@ -64,7 +62,7 @@ server.on("request", (req, res) => {
             body += chunk
 
         }).on('end', () => {
-            var data = body // or however you need your data
+            let data = body // or however you need your data
 
             try {
                 data = JSON.parse(data)
@@ -72,16 +70,7 @@ server.on("request", (req, res) => {
 
             }
 
-            func.handler(data, {}, (error, result) => {
-                res.statusCode = error ? 500 : 200
-
-                if (error) {
-                    res.statusCode = error ? 500 : 200
-                    res.write(JSON.stringify({ error }))
-                    res.end()
-                    return
-                }
-
+            func.handler(data, {}, (result) => {
                 let urls = {}
 
                 result.imageOptions.forEach(option => {
@@ -103,7 +92,7 @@ server.on("request", (req, res) => {
                         }
 
                         if (Object.keys(urls).length === result.imageOptions.length) {
-                            res.statusCode = error ? 500 : 200
+                            res.statusCode = 200
                             res.write(JSON.stringify({ result: urls }))
                             res.end()
                             return

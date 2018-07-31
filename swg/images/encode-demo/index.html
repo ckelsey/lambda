@@ -561,39 +561,33 @@
             makeRequest('encode', params)
                 .then(function (res) {
                     console.log(res)
+                    encodedTimeStart = new Date().getTime()
 
-                    if (!res.error) {
-                        encodedTimeStart = new Date().getTime()
+                    res.forEach(item => {
+                        var imgElement, textElement, key
 
-                        for (var p in res) {
-                            if (res[p] && res[p].success) {
-                                var imgElement, textElement
+                        if (item.indexOf(`large.jpg`) > -1) {
+                            key = `large`
+                            imgElement = window.document.getElementById(`encodedLargeImage`)
+                            textElement = window.document.getElementById(`encodedLargeImageText`)
 
-                                switch (p) {
-                                    case `large`:
-                                        imgElement = window.document.getElementById(`encodedLargeImage`)
-                                        textElement = window.document.getElementById(`encodedLargeImageText`)
-                                        break;
+                        } else if (item.indexOf(`preview.jpg`) > -1) {
+                            key = `preview`
+                            imgElement = window.document.getElementById(`encodedPreviewImage`)
+                            textElement = window.document.getElementById(`encodedPreviewImageText`)
 
-                                    case `preview`:
-                                        imgElement = window.document.getElementById(`encodedPreviewImage`)
-                                        textElement = window.document.getElementById(`encodedPreviewImageText`)
-                                        break;
-
-                                    case `thumb`:
-                                        imgElement = window.document.getElementById(`encodedThumbImage`)
-                                        textElement = window.document.getElementById(`encodedThumbImageText`)
-                                        break;
-                                }
-
-                                textElement.textContent = 'processing...'
-
-                                if (imgElement && textElement) {
-                                    setImage(p, res[p].response, imgElement, textElement, encodedTimeStart)
-                                }
-                            }
+                        } else if (item.indexOf(`thumb.jpg`) > -1) {
+                            key = `thumb`
+                            imgElement = window.document.getElementById(`encodedThumbImage`)
+                            textElement = window.document.getElementById(`encodedThumbImageText`)
                         }
-                    }
+
+                        textElement.textContent = 'processing...'
+
+                        if (imgElement && textElement) {
+                            setImage(key, item, imgElement, textElement, encodedTimeStart)
+                        }
+                    })
                 })
                 .catch(function (err) {
                     next()
@@ -615,7 +609,7 @@
                     textElement.innerHTML = text
 
                     resolve()
-                    
+
                     // var xhr2 = new XMLHttpRequest()
                     // xhr2.open('GET', url)
                     // xhr2.responseType = 'arraybuffer'

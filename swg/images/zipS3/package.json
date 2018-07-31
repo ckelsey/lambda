@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "s3-zip": "^1.0.4",
+    "xml-stream": "^0.4.5"
+  }
+}

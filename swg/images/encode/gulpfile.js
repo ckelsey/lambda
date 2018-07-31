@@ -3,6 +3,36 @@ const exec = require('child_process').exec
 const fs = require('fs')
 const baseDir = `./src`
 const toWatch = [`${baseDir}/*`]
+const { spawn } = require('child_process')
+const path = require("path")
+const gulpSequence = require('gulp-sequence')
+
+function pack() {
+    return new Promise(resolve => {
+
+        const child = spawn(`webpack`, [`--config`, path.join(__dirname, 'webpack.config.js'), `--progress`]);
+
+        child.stdout.on('data', (data) => {
+            console.log(`${data}`);
+        });
+
+        child.stderr.on('data', (data) => {
+            console.error(`${data}`);
+        });
+
+        child.on('exit', function (code, signal) {
+            exec(`osascript -e 'display notification "Complete" with title "WEBPACK"'`)
+            exec(`cp ./build/index.js ./env/mac/index.js`)
+            resolve()
+        });
+    })
+}
+
+gulp.task(`pack`, () => {
+    console.log(`START WEBPACK`)
+
+    return pack()
+})
 
 gulp.task('moveFiles', function (done) {
     var total = 0
@@ -53,6 +83,19 @@ gulp.task("build", function (done) {
             done()
         })
     })
+})
+
+gulp.task("linux-zip", function (done) {
+    exec(`cd env/linux/build && rm imageencode.zip`, function (err, stdout, stderr) {
+        exec(`cd env/linux/build && zip -r imageencode.zip .`, function (err, stdout, stderr) {
+            console.log(err, stdout, stderr)
+            done()
+        })
+    })
+})
+
+gulp.task("lambda", function (done) {
+    gulpSequence(`pack`, `linux-zip`)(done)
 })
 
 gulp.task("dev", ["moveFiles"], function () {

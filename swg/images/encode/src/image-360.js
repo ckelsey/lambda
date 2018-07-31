@@ -4,9 +4,6 @@ const { createCanvas, Image } = require('canvas')
 require("./canvas-renderer")
 require("./projector")
 
-const fs = require("fs")
-const Canvas = require("canvas")
-
 global.document = {
 	createElement: function (tag) {
 		if (tag === "img") {

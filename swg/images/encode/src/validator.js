@@ -21,8 +21,6 @@ module.exports = (data)=>{
     var model = _get(data, "Model", "").toLowerCase()
     var software = _get(data, "Software", "").toLowerCase()
     var make = _get(data, "Make", "").toLowerCase()
-    var Description = _get(data, "ImageDescription", _get(data, "Description"))
-    var MakerNote = _get(data, "MakerNote")
     var isValid = (model.indexOf("nvidia") > -1 ||
         model.indexOf("ansel") > -1 ||
         model.indexOf("nvcamera") > -1 ||

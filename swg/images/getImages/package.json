@@ -1,0 +1,6 @@
+{
+    "dependencies": {
+        "gulp": "^3.9.1",
+        "gulp-sequence": "^1.0.0"
+    }
+}
