@@ -10,7 +10,7 @@ const func = require("./index")
 const server = http.createServer().listen(8127);
 
 server.on("request", (req, res) => {
-
+console.log('hey')
     res.setHeader("Content-Type", "application/json; charset=utf-8")
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
