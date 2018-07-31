@@ -82,7 +82,13 @@ server.on("request", (req, res) => {
                         });
 
                         child.stderr.on('data', (data) => {
-                            console.error(`${data}`);
+                            console.error(`ERROR: ${data}`);
+                            completed++
+                            console.log(`completed`, completed)
+                            exec(`sudo rm -f ${filePath}`, function (err, stdout, stderr) {
+                                console.log(err, stdout, stderr)
+                                doReq()
+                            })
                         });
 
                         child.on('exit', function (code, signal) {
