@@ -8,7 +8,7 @@ var join = require('path').join
 var AWS = require('aws-sdk')
 var s3Zip = require('s3-zip')
 var XmlStream = require('xml-stream')
-
+const exec = require('child_process').exec
 var region = 'us-east-1'
 var bucket = 'cklsymedia'
 var folder = 'super_res'
@@ -20,7 +20,7 @@ var params = {
 }
 // var page = process.env.PAGE
 // var count = process.env.COUNT
-var zipName = `super_res7.zip`
+var zipName = `super_res0.zip`
 
 const http = require('http')
 const server = http.createServer().listen(8127);
@@ -39,43 +39,68 @@ server.on("request", (req, res) => {
         return
     }
 
+    
     console.log(`handle`)
-    var filesArray = []
-    var files = s3.listObjects(params).createReadStream()
-    var xml = new XmlStream(files)
-    xml.collect('Key')
-    xml.on('endElement: Key', function (item) {
-        filesArray.push(item['$text'].substr(folder.length))
-    })
+    let count = 150
+    let offset = 0
+    let offsetEnd = offset + count
 
-    xml
-        .on('end', function () {
-            zip(filesArray.slice(850,1000))
+    const run = (index)=>{
+        zipName = `super_res_${index}.zip`
+        var filesArray = []
+        var files = s3.listObjects(params).createReadStream()
+        var xml = new XmlStream(files)
+        xml.collect('Key')
+        xml.on('endElement: Key', function (item) {
+            filesArray.push(item['$text'].substr(folder.length))
         })
 
-    function zip(files) {
-        console.log(files.length)
-        var output = fs.createWriteStream(zipName)
-
-        s3Zip
-            .archive({ region: region, bucket: bucket, preserveFolderStructure: true }, folder, files)
-            .pipe(output)
-            .on(`finish`, () => {
-                s3.putObject({
-                    "Body": fs.createReadStream(zipName),
-                    "Bucket": bucket,
-                    "Key": zipName,
-                    "Metadata": {
-                        "Content-Length": String(fs.statSync(zipName).size)
-                    }
-                })
-                    .promise()
-                    .then(data => {
-                        res.statusCode = 200
-                        res.write(JSON.stringify(data))
-                        res.end()
-                        return
-                    })
+        xml
+            .on('end', function () {
+                let toZip = filesArray.slice(count * index, (count * index) + count)
+                if(!toZip || !toZip.length){
+                    console.log(`done`)
+                    return
+                }
+                zip(toZip)
             })
+
+        function zip(files) {
+            console.log(files.length)
+            var output = fs.createWriteStream(zipName)
+
+            s3Zip
+                .archive({ region: region, bucket: bucket, preserveFolderStructure: true }, folder, files)
+                .pipe(output)
+                .on(`finish`, () => {
+
+                    exec(`gdrive upload --parent 1ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj ${zipName}`, function (err, stdout, stderr) {
+                        console.log(err, stdout, stderr)
+
+                        exec(`sudo rm -f ${zipName}`, function (err, stdout, stderr) {
+                            console.log(err, stdout, stderr)
+                            run(index + 1)
+                        })
+                    })
+
+                    // s3.putObject({
+                    //     "Body": fs.createReadStream(zipName),
+                    //     "Bucket": bucket,
+                    //     "Key": zipName,
+                    //     "Metadata": {
+                    //         "Content-Length": String(fs.statSync(zipName).size)
+                    //     }
+                    // })
+                    //     .promise()
+                    //     .then(data => {
+                    //         res.statusCode = 200
+                    //         res.write(JSON.stringify(data))
+                    //         res.end()
+                    //         return
+                    //     })
+                })
+        }
     }
+
+    run(0)
 })
