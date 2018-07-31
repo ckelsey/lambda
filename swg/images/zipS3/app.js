@@ -12,6 +12,7 @@ var XmlStream = require('xml-stream')
 var region = 'us-east-1'
 var bucket = 'cklsymedia'
 var folder = 'super_res/'
+AWS.config.loadFromPath('./config.json');
 var s3 = new AWS.S3({ region: region })
 var params = {
     Bucket: bucket,
