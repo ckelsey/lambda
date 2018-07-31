@@ -10,6 +10,7 @@ const func = require("./index")
 const server = http.createServer().listen(8127);
 
 server.on("request", (req, res) => {
+    console.log(req.url)
 
     res.setHeader("Content-Type", "application/json; charset=utf-8")
     res.setHeader('Access-Control-Allow-Origin', '*');
