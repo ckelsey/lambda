@@ -49,7 +49,6 @@ server.on("request", (req, res) => {
         })
 
     function zip(files) {
-        console.log(files)
         var output = fs.createWriteStream(zipName)
 
         s3Zip
