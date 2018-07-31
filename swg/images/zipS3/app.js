@@ -50,11 +50,11 @@ server.on("request", (req, res) => {
 
     xml
         .on('end', function () {
-            zip(filesArray.slice(0,100))
+            zip(filesArray.slice(100,200))
         })
 
     function zip(files) {
-        console.log(filesArray.length)
+        console.log(files.length)
         var output = fs.createWriteStream(zipName)
 
         s3Zip
