@@ -42,8 +42,6 @@ server.on("request", (req, res) => {
     
     console.log(`handle`)
     let count = 150
-    let offset = 0
-    let offsetEnd = offset + count
 
     const run = (index)=>{
         zipName = `super_res_${index}.zip`
@@ -62,43 +60,73 @@ server.on("request", (req, res) => {
                     console.log(`done`)
                     return
                 }
-                zip(toZip)
+                getFiles(toZip)
             })
 
+        function getFiles(files){
+            console.log(files)
+            // let req2 = http.get(url, function (resp2) {
+            //     let imgData = []
+
+            //     resp2.on('data', (chunk) => {
+            //         imgData.push(chunk)
+            //     })
+
+            //     resp2.on('error', () => { })
+
+            //     resp2.on('end', () => {
+            //         let buffer = Buffer.concat(imgData)
+            //         uploadToS3({
+            //             filepath: fileName,
+            //             format: fileName.split(`.`)[fileName.split(`.`).length - 1],
+            //             buffer: buffer
+            //         })
+            //             .then(() => {
+            //                 running = false
+            //                 completed++
+            //                 console.log(completed)
+            //                 dlImage()
+            //             })
+            //     })
+            // }).on('error', () => { })
+
+            // req2.end()
+        }
+
         function zip(files) {
-            console.log(files.length)
-            var output = fs.createWriteStream(zipName)
+            console.log(files)
+            // var output = fs.createWriteStream(zipName)
 
-            s3Zip
-                .archive({ region: region, bucket: bucket, preserveFolderStructure: true }, folder, files)
-                .pipe(output)
-                .on(`finish`, () => {
+            // s3Zip
+            //     .archive({ region: region, bucket: bucket, preserveFolderStructure: true }, folder, files)
+            //     .pipe(output)
+            //     .on(`finish`, () => {
 
-                    exec(`gdrive upload --parent 1ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj ${zipName}`, function (err, stdout, stderr) {
-                        console.log(err, stdout, stderr)
+            //         exec(`gdrive upload --parent 1ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj ${zipName}`, function (err, stdout, stderr) {
+            //             console.log(err, stdout, stderr)
 
-                        exec(`sudo rm -f ${zipName}`, function (err, stdout, stderr) {
-                            console.log(err, stdout, stderr)
-                            run(index + 1)
-                        })
-                    })
+            //             exec(`sudo rm -f ${zipName}`, function (err, stdout, stderr) {
+            //                 console.log(err, stdout, stderr)
+            //                 run(index + 1)
+            //             })
+            //         })
 
-                    // s3.putObject({
-                    //     "Body": fs.createReadStream(zipName),
-                    //     "Bucket": bucket,
-                    //     "Key": zipName,
-                    //     "Metadata": {
-                    //         "Content-Length": String(fs.statSync(zipName).size)
-                    //     }
-                    // })
-                    //     .promise()
-                    //     .then(data => {
-                    //         res.statusCode = 200
-                    //         res.write(JSON.stringify(data))
-                    //         res.end()
-                    //         return
-                    //     })
-                })
+            //         // s3.putObject({
+            //         //     "Body": fs.createReadStream(zipName),
+            //         //     "Bucket": bucket,
+            //         //     "Key": zipName,
+            //         //     "Metadata": {
+            //         //         "Content-Length": String(fs.statSync(zipName).size)
+            //         //     }
+            //         // })
+            //         //     .promise()
+            //         //     .then(data => {
+            //         //         res.statusCode = 200
+            //         //         res.write(JSON.stringify(data))
+            //         //         res.end()
+            //         //         return
+            //         //     })
+            //     })
         }
     }
 
