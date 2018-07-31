@@ -53,6 +53,8 @@ server.on("request", (req, res) => {
         const doReq = () => {
             var keyPath = files.pop()
 
+            console.log(`keyPath`, keyPath)
+
             if (!keyPath) {
                 res.statusCode = 200
                 res.end()
@@ -69,6 +71,7 @@ server.on("request", (req, res) => {
                 function (error, data) {
                     if (error != null) {
                         console.log("Failed to retrieve an object: " + error);
+                        completed++
                         doReq()
                     } else {
                         console.log("Loaded " + data.ContentLength + " bytes")
