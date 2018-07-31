@@ -16,18 +16,12 @@ server.on("request", (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    let body = ''
+    req.on('end', () => {
+        // let data = body
 
-    req.on('data', (chunk) => {
+        // try { data = JSON.parse(data) } catch (error) { }
 
-        body += chunk
-
-    }).on('end', () => {
-        let data = body
-
-        try { data = JSON.parse(data) } catch (error) { }
-
-        func.handler(data, {}, (error, result) => {
+        func.handler(null, {}, (error, result) => {
             res.statusCode = 200
             res.write(JSON.stringify({ error, result }))
             res.end()
