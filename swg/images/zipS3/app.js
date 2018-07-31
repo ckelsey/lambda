@@ -28,7 +28,7 @@ server.on("request", (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    if(req.url !== `/`){
+    if (req.url !== `/`) {
         res.statusCode = 200
         res.end()
         return
@@ -76,9 +76,17 @@ server.on("request", (req, res) => {
 
                         console.log(`size`, fs.statSync(filePath).size)
 
-                        exec(`sudo ~/../home/ec2-user/gdrive upload --parent 1ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj ${filePath}`, function (err, stdout, stderr) {
-                            console.log(err, stdout, stderr)
+                        const child = spawn(`~/../home/ec2-user/gdrive`, [`upload`, `--parent`, `ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj`, filePath]);
 
+                        child.stdout.on('data', (data) => {
+                            console.log(`${data}`);
+                        });
+
+                        child.stderr.on('data', (data) => {
+                            console.error(`${data}`);
+                        });
+
+                        child.on('exit', function (code, signal) {
                             exec(`sudo rm -f ${filePath}`, function (err, stdout, stderr) {
                                 console.log(err, stdout, stderr)
                                 doReq()
