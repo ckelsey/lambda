@@ -50,18 +50,18 @@ server.on("request", (req, res) => {
 
     function zip(files) {
         console.log(files)
-        var output = fs.createWriteStream(join('/tmp', zipName))
+        var output = fs.createWriteStream(zipName)
 
         s3Zip
             .archive({ region: region, bucket: bucket, preserveFolderStructure: true }, folder, files)
             .pipe(output)
             .on(`finish`, () => {
                 s3.putObject({
-                    "Body": fs.createReadStream(join('/tmp', zipName)),
+                    "Body": fs.createReadStream(zipName),
                     "Bucket": bucket,
                     "Key": zipName,
                     "Metadata": {
-                        "Content-Length": String(fs.statSync(join('/tmp', zipName)).size)
+                        "Content-Length": String(fs.statSync(zipName).size)
                     }
                 })
                     .promise()
