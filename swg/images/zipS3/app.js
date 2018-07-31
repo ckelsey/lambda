@@ -50,6 +50,7 @@ server.on("request", (req, res) => {
         var xml = new XmlStream(files)
         xml.collect('Key')
         xml.on('endElement: Key', function (item) {
+            console.log(item)
             filesArray.push(item['$text'].substr(folder.length))
         })
 
@@ -64,7 +65,7 @@ server.on("request", (req, res) => {
             })
 
         function getFiles(files){
-            console.log(files)
+            // console.log(files)
             // let req2 = http.get(url, function (resp2) {
             //     let imgData = []
 
