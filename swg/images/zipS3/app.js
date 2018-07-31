@@ -76,12 +76,7 @@ server.on("request", (req, res) => {
 
                         console.log(`size`, fs.statSync(filePath).size)
 
-                        // exec(`whoami && sudo rm -f ${filePath}`, function (err, stdout, stderr) {
-                        //     console.log(err, stdout, stderr)
-                        //     doReq()
-                        // })
-
-                        exec(`~/../home/ec2-user/gdrive upload --parent 1ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj ${filePath}`, function (err, stdout, stderr) {
+                        exec(`sudo ~/../home/ec2-user/gdrive upload --parent 1ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj ${filePath}`, function (err, stdout, stderr) {
                             console.log(err, stdout, stderr)
 
                             exec(`sudo rm -f ${filePath}`, function (err, stdout, stderr) {
