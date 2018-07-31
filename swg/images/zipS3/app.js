@@ -20,7 +20,7 @@ var params = {
 }
 // var page = process.env.PAGE
 // var count = process.env.COUNT
-var zipName = `super_res2.zip`
+var zipName = `super_res3.zip`
 
 const http = require('http')
 const server = http.createServer().listen(8127);
@@ -50,7 +50,7 @@ server.on("request", (req, res) => {
 
     xml
         .on('end', function () {
-            zip(filesArray.slice(100,250))
+            zip(filesArray.slice(250,400))
         })
 
     function zip(files) {
