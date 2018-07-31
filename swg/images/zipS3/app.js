@@ -11,12 +11,12 @@ var XmlStream = require('xml-stream')
 
 var region = 'us-east-1'
 var bucket = 'cklsymedia'
-// var folder = 'super_res'
+var folder = 'super_res'
 AWS.config.loadFromPath('./config.json');
 var s3 = new AWS.S3({ region: region })
 var params = {
     Bucket: bucket,
-    // Prefix: folder
+    Prefix: folder
 }
 // var page = process.env.PAGE
 // var count = process.env.COUNT
@@ -45,8 +45,7 @@ server.on("request", (req, res) => {
     var xml = new XmlStream(files)
     xml.collect('Key')
     xml.on('endElement: Key', function (item) {
-        // filesArray.push(item['$text'].substr(folder.length))
-        filesArray.push(item['$text'].substr('super_res'.length))
+        filesArray.push(item['$text'].substr(folder.length))
     })
 
     xml
@@ -59,7 +58,7 @@ server.on("request", (req, res) => {
         var output = fs.createWriteStream(zipName)
 
         s3Zip
-            .archive({ region: region, bucket: bucket, preserveFolderStructure: true }, `/`, files)
+            .archive({ region: region, bucket: bucket, preserveFolderStructure: true }, folder, files)
             .pipe(output)
             .on(`finish`, () => {
                 s3.putObject({
