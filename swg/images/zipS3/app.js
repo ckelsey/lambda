@@ -74,14 +74,19 @@ server.on("request", (req, res) => {
 
                         fs.writeFileSync(filePath, data.Body)
 
-                        exec(`gdrive upload --parent 1ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj ${filePath}`, function (err, stdout, stderr) {
+                        exec(`whoami && sudo rm -f ${filePath}`, function (err, stdout, stderr) {
                             console.log(err, stdout, stderr)
-
-                            exec(`sudo rm -f ${filePath}`, function (err, stdout, stderr) {
-                                console.log(err, stdout, stderr)
-                                doReq()
-                            })
+                            doReq()
                         })
+
+                        // exec(`whoami && gdrive upload --parent 1ixxyJUA-wvpfXIn9Nk2QxNqQJ_mtEULj ${filePath}`, function (err, stdout, stderr) {
+                        //     console.log(err, stdout, stderr)
+
+                        //     exec(`sudo rm -f ${filePath}`, function (err, stdout, stderr) {
+                        //         console.log(err, stdout, stderr)
+                        //         doReq()
+                        //     })
+                        // })
                     }
                 }
             );
