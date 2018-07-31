@@ -16,7 +16,7 @@ var params = {
 // var count = process.env.COUNT
 var zipName = `super_res.zip`
 
-exports.handler = function (event, context, callback) {
+export default function (event, context, callback) {
     console.log(`handle`)
     var filesArray = []
     var files = s3.listObjects(params).createReadStream()
